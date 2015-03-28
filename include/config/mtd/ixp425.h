@@ -1,0 +1,1 @@
+#define CONFIG_MTD_IXP425 1

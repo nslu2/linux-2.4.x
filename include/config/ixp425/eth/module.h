@@ -1,0 +1,1 @@
+#define CONFIG_IXP425_ETH_MODULE 1

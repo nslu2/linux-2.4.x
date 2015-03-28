@@ -1,0 +1,1 @@
+#define CONFIG_IXP425_CSR_MODULE 1

@@ -1,0 +1,1 @@
+#define CONFIG_X1226_RTC_MODULE 1

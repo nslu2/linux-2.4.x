@@ -1,0 +1,61 @@
+Index: drivers/mtd/maps/ixp425.c
+===================================================================
+RCS file: /cvsdev/mvl-kernel/linux/drivers/mtd/maps/ixp425.c,v
+retrieving revision 1.1.2.2
+diff -u -r1.1.2.2 ixp425.c
+--- drivers/mtd/maps/ixp425.c	1 Apr 2003 06:22:53 -0000	1.1.2.2
++++ drivers/mtd/maps/ixp425.c	30 Sep 2003 18:01:42 -0000
+@@ -21,6 +21,8 @@
+ #include <linux/ioport.h>
+ #include <asm/io.h>
+ 
++#include <linux/reboot.h>
++
+ #define WINDOW_ADDR 	0x50000000
+ #define BUSWIDTH 	2
+ #define WINDOW_SIZE	0x01000000
+@@ -78,6 +80,25 @@
+ 	write16:	ixp425_write16,
+ };
+ 
++/*
++ * HACK: Put flash back in read mode so RedBoot can boot properly.
++ */
++ixp425_mtd_reboot(struct notifier_block *n, unsigned long code, void *p)
++{
++	if(code != SYS_RESTART)
++		return NOTIFY_DONE;
++
++	printk("Enabling flash read mode\n");
++	ixp425_write16(&ixp425_map, 0xff, 0x55 * 0x2);
++}
++
++static struct notifier_block ixp425_mtd_notifier = {
++	notifier_call:	ixp425_mtd_reboot,
++	next:		NULL,
++	priority:	0
++};
++
++
+ #ifdef CONFIG_MTD_REDBOOT_PARTS
+ static struct mtd_partition *parsed_parts;
+ #endif
+@@ -118,6 +139,8 @@
+ 	kfree(parsed_parts);
+ #endif
+ 
++    unregister_reboot_notifier(&ixp425_mtd_notifier);
++
+     /* Disable flash write */
+     *IXP425_EXP_CS0 &= ~IXP425_FLASH_WRITABLE;
+ }
+@@ -179,6 +202,9 @@
+ 	res = add_mtd_partitions(ixp425_mtd, ixp425_partitions,
+ 	    NB_OF(ixp425_partitions));
+     }
++
++
++    register_reboot_notifier(&ixp425_mtd_notifier);
+ 
+     if (res)
+ 	goto Error;

@@ -1,0 +1,1 @@
+#define CONFIG_IXP425_SDRAM_SIZE (32)
